@@ -10,12 +10,12 @@ use App\Http\Controllers\StoreController;
 
 Route::get('/', [StoreController::class, 'index']);
 
-Route::get('/products', [StoreController::class, 'products']);
+Route::get('/products', [StoreController::class, 'products']); 
 
-Route::get('/productDetails/{id}', [StoreController::class, 'productDetails'])->name('product.details');
+Route::get('/productDetails/{id}', [StoreController::class, 'productDetails'])->name('product.details'); 
 
-Route::get('/cart', [StoreController::class, 'cart']);
+Route::get('/cart', [StoreController::class, 'cart']); 
 
-Route::get('/aboutUs', [StoreController::class, 'aboutUs']);
+Route::get('/aboutUs', [StoreController::class, 'aboutUs']); 
 
-Route::get('/contact', [StoreController::class, 'contact']);
+Route::get('/contact', [StoreController::class, 'contact']); 
