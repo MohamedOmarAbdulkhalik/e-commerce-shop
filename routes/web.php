@@ -2,11 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\StoreController;
 
-Route::get('/', function () {
-    return view('shop.index');
-});
+// Route::get('/', function () {
+//     return view('shop.index');
+// });
 
-Route::get('/shop', [ShopController::class, 'index']);
+Route::get('/', [StoreController::class, 'index']);
 
+Route::get('/products', [StoreController::class, 'products']);
 
