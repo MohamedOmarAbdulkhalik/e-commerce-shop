@@ -12,7 +12,7 @@ Route::get('/', [StoreController::class, 'index']);
 
 Route::get('/products', [StoreController::class, 'products']);
 
-Route::get('/productDetails', [StoreController::class, 'productDetails']);
+Route::get('/productDetails/{id}', [StoreController::class, 'productDetails'])->name('product.details');
 
 Route::get('/cart', [StoreController::class, 'cart']);
 
