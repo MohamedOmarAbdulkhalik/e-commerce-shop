@@ -83,11 +83,11 @@ private $aboutData = [
         return view('shop.about-us');
     }
 
-    // صفحة تواصل معنا
-    public function contact()
-    {
-        return view('shop.contact');
-    }
+public function contact()
+{
+    return view('shop.contact', ['aboutUs' => $this->aboutData]);
+}
+
 }
 
 
