@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\ProductController;
 
 // Route::get('/', function () {
 //     return view('shop.index');
@@ -10,9 +11,9 @@ use App\Http\Controllers\StoreController;
 
 Route::get('/', [StoreController::class, 'index']);
 
-Route::get('/products', [StoreController::class, 'products']); 
+Route::get('/products', [ProductController::class, 'index']); 
 
-Route::get('/productDetails/{id}', [StoreController::class, 'productDetails'])->name('product.details'); 
+Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
 
 Route::get('/cart', [StoreController::class, 'cart']); 
 
