@@ -43,10 +43,19 @@
                                             <span class="new-badge">New</span>
                                         @endif
                                         <span class="product-number">{{ $loop->index + 1 }}</span>
-                                        <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" class="card-img-top" alt="{{ $product['name'] }}">
+                                        
+                                        <!-- رابط لصفحة التفاصيل -->
+                                        <a href="{{ route('products.show', $product['id']) }}">
+                                            <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                                                class="card-img-top" alt="{{ $product['name'] }}">
+                                        </a>
                                     </div>
                                     <div class="card-body">
-                                        <h5 class="card-title">{{ $product['name'] }}</h5>
+                                        <h5 class="card-title">
+                                            <a href="{{ route('products.show', $product['id']) }}" class="text-decoration-none text-dark">
+                                                {{ $product['name'] }}
+                                            </a>
+                                        </h5>
                                         <p class="card-text">{{ $product['description'] }}</p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             @if($product['on_sale'])
@@ -57,11 +66,12 @@
                                             @else
                                                 <span class="price">${{ number_format($product['price'], 2) }}</span>
                                             @endif
-                                            <button class="btn btn-primary">Add to Cart</button>
+                                            <a href="{{ route('products.show', $product['id']) }}" class="btn btn-outline-primary">View</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                         @endforeach
                     </div>
                 @endunless
