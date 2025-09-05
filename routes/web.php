@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ContactController;
 
 // Route::get('/', function () {
 //     return view('shop.index');
@@ -30,3 +31,5 @@ Route::get('/cart', [StoreController::class, 'cart']);
 Route::get('/aboutUs', [StoreController::class, 'aboutUs']); 
 
 Route::get('/contact', [StoreController::class, 'contact']); 
+
+Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
