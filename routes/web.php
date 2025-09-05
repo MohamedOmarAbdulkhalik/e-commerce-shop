@@ -11,9 +11,13 @@ use App\Http\Controllers\ProductController;
 
 Route::get('/', [StoreController::class, 'index']);
 
-Route::get('/products', [ProductController::class, 'index']); 
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
 Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
+
+Route::get('/add-product', [ProductController::class, 'create'])->name('products.create');
+
+Route::post('/store', [ProductController::class, 'store'])->name('products.store');
 
 Route::get('/cart', [StoreController::class, 'cart']); 
 
