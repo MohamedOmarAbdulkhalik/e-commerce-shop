@@ -23,6 +23,7 @@ Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('products.edi
 
 Route::put('/update/{id}', [ProductController::class, 'update'])->name('products.update');
 
+Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 Route::get('/cart', [StoreController::class, 'cart']); 
 

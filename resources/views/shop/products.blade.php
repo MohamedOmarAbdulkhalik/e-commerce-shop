@@ -14,7 +14,30 @@
             </div>
         </div>
     </section>
+    {{-- Display Success Messages --}}
+    @if(session('success'))
+    <div class="container mt-4">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            ✅ {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    @endif
 
+    {{-- Display Error Messages --}}
+    @if($errors->any())
+    <div class="container mt-4">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            ❌ There was an error with your request:
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    @endif
     <section class="products-section section-padding">
         <div class="container">
             <div class="row justify-content-center">
@@ -86,6 +109,9 @@
                                             <div class="btn-group">
                                                 <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary btn-sm">View</a>
                                                 <a href="{{ route('products.edit', $product->id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $product->id }}">
+                                                    Delete
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -97,6 +123,37 @@
             </div>
         </div>
     </section>
+    <!-- Delete Confirmation Modals -->
+@foreach($products as $product)
+<div class="modal fade" id="deleteModal{{ $product->id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ $product->id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ $product->id }}">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>"{{ $product->name }}"</strong>?</p>
+                <p class="text-danger">This action cannot be undone!</p>
+                
+                @if($product->image_path)
+                <div class="alert alert-warning mt-3">
+                    <small>⚠️ The product image will also be deleted permanently.</small>
+                </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ route('products.destroy', $product->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
 </main>
 
 
