@@ -37,41 +37,57 @@
                             <div class="col-lg-4 col-md-6 col-12 mb-4">
                                 <div class="product-card card h-100 {{ $loop->first ? 'first-product' : '' }}">
                                     <div class="position-relative">
-                                        @if($product['on_sale'])
+                                        @if($product->on_sale)
                                             <span class="sale-badge">Sale</span>
-                                        @else
-                                            <span class="new-badge">New</span>
                                         @endif
                                         <span class="product-number">{{ $loop->index + 1 }}</span>
                                         
                                         <!-- رابط لصفحة التفاصيل -->
-                                        <a href="{{ route('products.show', $product['id']) }}">
-                                            <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
-                                                class="card-img-top" alt="{{ $product['name'] }}">
+                                        <a href="{{ route('products.show', $product->id) }}">
+                                            @if($product->image_path)
+                                                <!-- عرض الصورة المرفوعة -->
+                                                <img src="{{ asset('storage/' . $product->image_path) }}" 
+                                                    class="card-img-top" 
+                                                    alt="{{ $product->name }}"
+                                                    style="height: 250px; object-fit: cover;">
+                                            @else
+                                                <!-- صورة افتراضية إذا لم توجد صورة -->
+                                                <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                                                    class="card-img-top" 
+                                                    alt="{{ $product->name }}"
+                                                    style="height: 250px; object-fit: cover;">
+                                            @endif
                                         </a>
                                     </div>
                                     <div class="card-body">
                                         <h5 class="card-title">
-                                            <a href="{{ route('products.show', $product['id']) }}" class="text-decoration-none text-dark">
-                                                {{ $product['name'] }}
+                                            <a href="{{ route('products.show', $product->id) }}" class="text-decoration-none text-dark">
+                                                {{ $product->name }}
                                             </a>
                                         </h5>
-                                        <p class="card-text">{{ $product['description'] }}</p>
+                                        <p class="card-text text-muted">
+                                            {{ $product->description ?: 'No description available' }}
+                                        </p>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            @if($product['on_sale'])
+                                            @if($product->on_sale)
                                                 <div>
-                                                    <span class="original-price">${{ number_format($product['price'] * 1.2, 2) }}</span>
-                                                    <span class="sale-price">${{ number_format($product['price'], 2) }}</span>
+                                                    <span class="original-price text-muted text-decoration-line-through me-2">
+                                                        ${{ number_format($product->price * 1.2, 2) }}
+                                                    </span>
+                                                    <span class="sale-price text-danger fw-bold">
+                                                        ${{ number_format($product->price, 2) }}
+                                                    </span>
                                                 </div>
                                             @else
-                                                <span class="price">${{ number_format($product['price'], 2) }}</span>
+                                                <span class="price text-primary fw-bold">
+                                                    ${{ number_format($product->price, 2) }}
+                                                </span>
                                             @endif
-                                            <a href="{{ route('products.show', $product['id']) }}" class="btn btn-outline-primary">View</a>
+                                            <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
                         @endforeach
                     </div>
                 @endunless
@@ -79,6 +95,7 @@
         </div>
     </section>
 </main>
+
 
 <style>
     .products-section {
