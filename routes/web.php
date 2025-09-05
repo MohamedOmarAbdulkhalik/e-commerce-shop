@@ -19,6 +19,11 @@ Route::get('/add-product', [ProductController::class, 'create'])->name('products
 
 Route::post('/store', [ProductController::class, 'store'])->name('products.store');
 
+Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('products.edit');
+
+Route::put('/update/{id}', [ProductController::class, 'update'])->name('products.update');
+
+
 Route::get('/cart', [StoreController::class, 'cart']); 
 
 Route::get('/aboutUs', [StoreController::class, 'aboutUs']); 

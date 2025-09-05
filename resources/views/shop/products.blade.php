@@ -83,7 +83,10 @@
                                                     ${{ number_format($product->price, 2) }}
                                                 </span>
                                             @endif
-                                            <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                            <div class="btn-group">
+                                                <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                                                <a href="{{ route('products.edit', $product->id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
