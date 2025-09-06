@@ -64,17 +64,26 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" 
-                            id="description" name="description" rows="3" 
-                            placeholder="Enter product description">{{ old('description') }}</textarea>
-                    @error('description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
                 <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Category *</label>
+                            <select class="form-select @error('category_id') is-invalid @enderror" 
+                                id="category_id" name="category_id" required>
+                                <option value="">Select Category</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" 
+                                        {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Sale Status</label>
@@ -87,18 +96,26 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Product Image</label>
-                            <input type="file" class="form-control @error('image') is-invalid @enderror" 
-                                id="image" name="image" accept="image/*">
-                            @error('image')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Max file size: 2MB (JPEG, PNG, JPG, GIF)</div>
-                        </div>
-                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                            id="description" name="description" rows="3" 
+                            placeholder="Enter product description">{{ old('description') }}</textarea>
+                    @error('description')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="image" class="form-label">Product Image</label>
+                    <input type="file" class="form-control @error('image') is-invalid @enderror" 
+                        id="image" name="image" accept="image/*">
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text">Max file size: 2MB (JPEG, PNG, JPG, GIF)</div>
                 </div>
 
                 <div class="mb-3 text-center">
