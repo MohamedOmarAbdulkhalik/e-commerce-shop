@@ -15,7 +15,7 @@
         </div>
     </div>
 </x-app-layout> --}}
-@extends('layouts.adminApp')
+@extends('layouts.app')
 
 @section('title', 'لوحة التحكم')
 
