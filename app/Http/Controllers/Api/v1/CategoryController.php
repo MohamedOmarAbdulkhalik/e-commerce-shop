@@ -3,47 +3,57 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return CategoryResource::collection(Category::with('products')->paginate(10));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function show(Category $category)
+    {
+        return new CategoryResource($category->load('products'));
+    }
+
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name',
+            'description' => 'nullable|string',
+        ]);
+
+        $category = Category::create($validated);
+
+        return new CategoryResource($category);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Category $category)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255|unique:categories,name,' . $category->id,
+            'description' => 'nullable|string',
+        ]);
+
+        $category->update($validated);
+
+        return new CategoryResource($category);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Category $category)
     {
-        //
-    }
+        // التحقق إذا كانت الفئة تحتوي على منتجات
+        if ($category->products()->count() > 0) {
+            return response()->json([
+                'message' => 'Cannot delete category with associated products.'
+            ], 422);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $category->delete();
+
+        return response()->noContent();
     }
 }
