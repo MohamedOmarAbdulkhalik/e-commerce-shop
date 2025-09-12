@@ -6,7 +6,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdminController;
-
+use App\Models\User;
 // 🛡️ كل المسارات محمية بالـ auth و verified
 Route::middleware(['auth', 'verified'])->group(function () {
     
@@ -48,5 +48,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
+use App\Notifications\NewOrderNotification;
+
+// مسارات اختبار البريد والإشعارات
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/test-welcome-email', function () {
+        $user = Auth::user();
+        Mail::to($user)->send(new WelcomeEmail($user));
+        return 'Welcome email sent!';
+    })->name('test.welcome.email');
+
+Route::get('/test-order-notification', function () {
+    $user = Auth::user();
+    $user->notify(new NewOrderNotification());
+    return 'Order notification sent!';
+})->name('test.order.notification');
+});
 // مسارات Breeze الأساسية (تسجيل الدخول، تسجيل الحساب، الخروج)
 require __DIR__.'/auth.php';

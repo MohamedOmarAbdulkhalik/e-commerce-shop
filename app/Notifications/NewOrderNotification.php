@@ -14,9 +14,13 @@ class NewOrderNotification extends Notification implements ShouldQueue
 
     public $order;
 
-    public function __construct($order)
+    public function __construct($orderData = null)
     {
-        $this->order = $order;
+        $this->order = $orderData ?? (object)[
+            'id' => rand(1000, 9999),
+            'total' => rand(50, 500),
+            'status' => 'pending'
+        ];
     }
 
     public function via($notifiable): array
