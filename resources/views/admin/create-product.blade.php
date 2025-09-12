@@ -1,16 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Product - Coffee Shop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; padding-top: 20px; }
-        .form-container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        .form-title { color: #6f42c1; border-bottom: 3px solid #6f42c1; padding-bottom: 10px; }
-    </style>
-</head>
+@extends('layouts.app')
+
+@section('title', 'Manage Products - Coffee Shop')
+
+@section('content')
 <body>
     <div class="container">
         <div class="form-container">
@@ -35,7 +27,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 
                 <div class="row">
@@ -152,6 +144,6 @@
                 preview.style.display = 'none';
             }
         });
+        </body>
     </script>
-</body>
-</html>
+@endsection
