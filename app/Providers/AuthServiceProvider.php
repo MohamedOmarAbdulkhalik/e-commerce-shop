@@ -29,7 +29,7 @@ class AuthServiceProvider extends ServiceProvider
             return true;
         }
 
-        // تسجيل محاولات غير مصرح بها
+        // log unathorized access atemp
         Log::warning("Unauthorized access attempt by user: {$user->id}");
         return false;
     });
