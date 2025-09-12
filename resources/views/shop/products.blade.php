@@ -108,10 +108,13 @@
                                             @endif
                                             <div class="btn-group">
                                                 <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-primary btn-sm">View</a>
-                                                <a href="{{ route('products.edit', $product->id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
-                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $product->id }}">
-                                                    Delete
-                                                </button>
+                                                @can('update', $product)
+                                                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $product->id }}">
+                                                        Delete
+                                                    </button>       
+                                                @endcan
+
                                             </div>
                                         </div>
                                     </div>
