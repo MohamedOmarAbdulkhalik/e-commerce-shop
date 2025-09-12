@@ -18,7 +18,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url('/products') }}">Products</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/cart') }}">Cart</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url('/contact') }}">Contact</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}">Log in</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/dashboard') }}">Dashboard</a></li>
 
                 </ul>
 
