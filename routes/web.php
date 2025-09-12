@@ -5,6 +5,7 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AdminController;
 
 // Route::get('/', function () {
 //     return view('shop.index');
@@ -25,6 +26,13 @@ Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('products.edi
 Route::put('/update/{id}', [ProductController::class, 'update'])->name('products.update');
 
 Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+// Admin routes group
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/products', [AdminController::class, 'products'])->name('products');
+    Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
+});
 
 Route::get('/cart', [StoreController::class, 'cart']); 
 
