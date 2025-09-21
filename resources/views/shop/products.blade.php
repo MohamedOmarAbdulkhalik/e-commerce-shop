@@ -38,6 +38,41 @@
         </div>
     </div>
     @endif
+    {{-- Search Section --}}
+<section class="search-section py-4 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-12">
+                <form action="{{ route('search') }}" method="GET" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" 
+                           placeholder="ابحث عن منتج بالاسم أو الوصف..." 
+                           value="{{ request('search') }}"
+                           required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> بحث
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        {{-- عرض نتائج البحث --}}
+        @if(isset($searchTerm) && $searchTerm)
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <p class="text-muted">
+                    نتائج البحث عن: <strong>"{{ $searchTerm }}"</strong>
+                    @if(count($products) > 0)
+                        - تم العثور على {{ count($products) }} منتج
+                    @endif
+                </p>
+                <a href="{{ route('products.index') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> العودة لجميع المنتجات
+                </a>
+            </div>
+        </div>
+        @endif
+    </div>
+</section>
     <section class="products-section section-padding">
         <div class="container">
             <div class="row justify-content-center">

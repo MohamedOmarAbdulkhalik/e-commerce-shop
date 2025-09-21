@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/edit/{id}', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/update/{id}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::get('/search', [ProductController::class, 'search'])->name('search');
 
     // مسارات الادمن مع middleware إضافي للصلاحيات
     Route::middleware(['can:access-admin-panel'])->prefix('admin')->name('admin.')->group(function () {

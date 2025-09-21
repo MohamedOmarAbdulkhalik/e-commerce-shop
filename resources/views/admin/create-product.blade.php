@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label for="category_id" class="form-label">Category *</label>
                             <select class="form-select @error('category_id') is-invalid @enderror" 
@@ -76,7 +76,20 @@
                         </div>
                     </div>
                     
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Quantity *</label>
+                            <input type="number" class="form-control @error('quantity') is-invalid @enderror" 
+                                id="quantity" name="quantity" value="{{ old('quantity', 0) }}" 
+                                placeholder="Enter quantity" min="0" required>
+                            @error('quantity')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">Warning: Quantity below 5 will trigger a stock alert</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label class="form-label">Sale Status</label>
                             <div class="form-check">
@@ -144,6 +157,26 @@
                 preview.style.display = 'none';
             }
         });
-        </body>
+
+        // Quantity validation with warning
+        document.getElementById('quantity').addEventListener('change', function(e) {
+            const quantity = parseInt(e.target.value);
+            const warningElement = document.getElementById('quantityWarning');
+            
+            if (quantity < 5) {
+                if (!warningElement) {
+                    const warningDiv = document.createElement('div');
+                    warningDiv.id = 'quantityWarning';
+                    warningDiv.className = 'text-warning small mt-1';
+                    warningDiv.innerHTML = '⚠️ Low stock warning: Quantity is below 5';
+                    e.target.parentNode.appendChild(warningDiv);
+                }
+            } else {
+                if (warningElement) {
+                    warningElement.remove();
+                }
+            }
+        });
     </script>
+</body>
 @endsection

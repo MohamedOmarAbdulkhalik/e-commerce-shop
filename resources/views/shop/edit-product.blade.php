@@ -76,6 +76,34 @@
                                     </div>
                                 </div>
 
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quantity" class="form-label">Quantity *</label>
+                                            <input type="number" class="form-control @error('quantity') is-invalid @enderror" 
+                                                   id="quantity" name="quantity" value="{{ old('quantity', $product->quantity) }}" 
+                                                   placeholder="Enter quantity" min="0" required>
+                                            @error('quantity')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="form-text">Warning: Quantity below 5 will trigger a stock alert</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Sale Status</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="on_sale" name="on_sale" value="1" 
+                                                    {{ old('on_sale', $product->on_sale) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="on_sale">
+                                                    Mark as on sale
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Description</label>
                                     <textarea class="form-control @error('description') is-invalid @enderror" 
@@ -89,19 +117,6 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Sale Status</label>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="on_sale" name="on_sale" value="1" 
-                                                    {{ old('on_sale', $product->on_sale) ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="on_sale">
-                                                    Mark as on sale
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
                                             <label for="image" class="form-label">Product Image</label>
                                             <input type="file" class="form-control @error('image') is-invalid @enderror" 
                                                    id="image" name="image" accept="image/*">
@@ -109,6 +124,21 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                             <div class="form-text">Max file size: 2MB (JPEG, PNG, JPG, GIF)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Stock Status</label>
+                                            <div class="alert alert-info p-2">
+                                                @if($product->quantity == 0)
+                                                    <span class="text-danger">❌ Out of Stock</span>
+                                                @elseif($product->quantity < 5)
+                                                    <span class="text-warning">⚠️ Low Stock ({{ $product->quantity }} remaining)</span>
+                                                @else
+                                                    <span class="text-success">✅ In Stock ({{ $product->quantity }} available)</span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -179,6 +209,38 @@
             reader.readAsDataURL(file);
         } else {
             preview.style.display = 'none';
+        }
+    });
+
+    // Quantity validation with warning
+    document.getElementById('quantity').addEventListener('change', function(e) {
+        const quantity = parseInt(e.target.value);
+        const warningElement = document.getElementById('quantityWarning');
+        
+        if (quantity < 5) {
+            if (!warningElement) {
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'quantityWarning';
+                warningDiv.className = 'text-warning small mt-1';
+                warningDiv.innerHTML = '⚠️ Low stock warning: Quantity is below 5';
+                e.target.parentNode.appendChild(warningDiv);
+            }
+        } else {
+            if (warningElement) {
+                warningElement.remove();
+            }
+        }
+    });
+
+    // Check initial quantity on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialQuantity = parseInt(document.getElementById('quantity').value);
+        if (initialQuantity < 5) {
+            const warningDiv = document.createElement('div');
+            warningDiv.id = 'quantityWarning';
+            warningDiv.className = 'text-warning small mt-1';
+            warningDiv.innerHTML = '⚠️ Low stock warning: Quantity is below 5';
+            document.getElementById('quantity').parentNode.appendChild(warningDiv);
         }
     });
 </script>
