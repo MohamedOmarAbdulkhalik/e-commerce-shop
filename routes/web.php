@@ -61,11 +61,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return 'Welcome email sent!';
     })->name('test.welcome.email');
 
-Route::get('/test-order-notification', function () {
-    $user = Auth::user();
-    $user->notify(new NewOrderNotification());
-    return 'Order notification sent!';
-})->name('test.order.notification');
+    Route::get('/test-order-notification', function () {
+        $user = Auth::user();
+        
+        // إنشاء بيانات الطلب
+        $orderData = [
+            'id' => rand(1000, 9999),
+            'total' => rand(50, 500) + (rand(0, 99) / 100),
+            'status' => 'pending'
+        ];
+        
+        // إرسال الإشعار
+        $user->notify(new NewOrderNotification((object)$orderData));
+        
+        return 'Order notification sent! Check your database notifications table.';
+    })->name('test.order.notification');
+
+
+
+
 });
 // مسارات Breeze الأساسية (تسجيل الدخول، تسجيل الحساب، الخروج)
 require __DIR__.'/auth.php';
