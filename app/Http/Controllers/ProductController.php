@@ -21,7 +21,9 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
+            // استخدام findOrFail للبحث عن المنتج مع العلاقات
             $product = Product::with('category')->findOrFail($id);
+            
             $relatedProducts = Product::where('category_id', $product->category_id)
                 ->where('id', '!=', $id)
                 ->take(4)
@@ -30,6 +32,7 @@ class ProductController extends Controller
             return view('shop.product-details', compact('product', 'relatedProducts'));
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // تسجيل الخطأ بشكل مفصل
             Log::error('Product not found - Show', [
                 'user_id' => Auth::id(),
                 'user_name' => Auth::user() ? Auth::user()->name : 'Guest',
@@ -39,11 +42,49 @@ class ProductController extends Controller
                 'timestamp' => now()->toDateTimeString()
             ]);
 
-           
-            throw new ProductNotFoundException($id, "Product with ID {$id} not found.");
+            // إعادة رسالة خطأ بسيطة للمستخدم مع التوجيه للصفحة الرئيسية
+            return redirect()->route('products.index')
+                ->with('error', 'عذراً، المنتج الذي تبحث عنه غير موجود أو غير متاح حالياً.');
+                
+        } catch (\Exception $e) {
+            // معالجة أي استثناءات أخرى قد تحدث
+            Log::error('Unexpected error in product retrieval', [
+                'user_id' => Auth::id(),
+                'product_id' => $id,
+                'error_message' => $e->getMessage(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return redirect()->route('products.index')
+                ->with('error', 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.');
         }
     }
 
+
+    public function search(Request $request)
+    {
+        try {
+            $searchTerm = $request->input('search');
+            
+            $products = Product::where('name', 'like', '%' . $searchTerm . '%')
+                ->orWhere('description', 'like', '%' . $searchTerm . '%')
+                ->get();
+                
+            return view('shop.products', compact('products', 'searchTerm'));
+            
+        } catch (\Exception $e) {
+            Log::error('Product search failed', [
+                'search_term' => $request->input('search'),
+                'error_message' => $e->getMessage(),
+                'ip_address' => request()->ip()
+            ]);
+            
+            return redirect()->route('products.index')
+                ->with('error', 'حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.');
+        }
+    }
+    
     public function create()
     {
         $categories = Category::all();
