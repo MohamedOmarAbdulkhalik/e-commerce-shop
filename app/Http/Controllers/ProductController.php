@@ -8,7 +8,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Exceptions\ProductNotFoundException;
+use App\Exceptions\ProductNotFoundException; 
 
 class ProductController extends Controller
 {
@@ -39,6 +39,7 @@ class ProductController extends Controller
                 'timestamp' => now()->toDateTimeString()
             ]);
 
+           
             throw new ProductNotFoundException($id, "Product with ID {$id} not found.");
         }
     }
@@ -164,6 +165,7 @@ class ProductController extends Controller
                 'timestamp' => now()->toDateTimeString()
             ]);
 
+           
             throw new ProductNotFoundException($id, "Cannot edit product. Product with ID {$id} not found.");
         }
     }
@@ -268,6 +270,7 @@ class ProductController extends Controller
                 'timestamp' => now()->toDateTimeString()
             ]);
 
+        
             throw new ProductNotFoundException($id, "Cannot update product. Product with ID {$id} not found.");
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -338,6 +341,7 @@ class ProductController extends Controller
                 'ip_address' => request()->ip(),
                 'timestamp' => now()->toDateTimeString()
             ]);
+
 
             throw new ProductNotFoundException($id, "Cannot delete product. Product with ID {$id} not found.");
 
