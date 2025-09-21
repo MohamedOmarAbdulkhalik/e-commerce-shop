@@ -12,6 +12,10 @@ class ProductNotFoundException extends Exception
     protected $message = 'Product not found.';
     protected $productId;
 
+    public function getProductId()
+    {
+        return $this->productId;
+    }   
 public function __construct($productId = null ,$message = null)
 {
     parent::__construct($message ?? 'Product not found.');
