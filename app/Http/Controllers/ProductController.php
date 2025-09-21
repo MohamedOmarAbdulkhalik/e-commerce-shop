@@ -10,10 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Exceptions\ProductNotFoundException;
 
-
 class ProductController extends Controller
 {
-    //
     public function index()
     {
         $products = Product::all();
@@ -22,13 +20,27 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with('category')->findOrFail($id);
-        $relatedProducts = Product::where('category_id', $product->category_id)
-            ->where('id', '!=', $id)
-            ->take(4)
-            ->get();
+        try {
+            $product = Product::with('category')->findOrFail($id);
+            $relatedProducts = Product::where('category_id', $product->category_id)
+                ->where('id', '!=', $id)
+                ->take(4)
+                ->get();
 
-        return view('shop.product-details', compact('product', 'relatedProducts'));
+            return view('shop.product-details', compact('product', 'relatedProducts'));
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('Product not found - Show', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user() ? Auth::user()->name : 'Guest',
+                'product_id' => $id,
+                'error_message' => $e->getMessage(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            throw new ProductNotFoundException($id, "Product with ID {$id} not found.");
+        }
     }
 
     public function create()
@@ -37,41 +49,123 @@ class ProductController extends Controller
         return view('admin.create-product', compact('categories'));
     }
 
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'category_id' => 'required|exists:categories,id', // تأكد من هذه القاعدة
-        'on_sale' => 'boolean',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-    ]);
+    public function store(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'quantity' => 'required|integer|min:0', // أضفنا حقل الكمية
+                'category_id' => 'required|exists:categories,id',
+                'on_sale' => 'boolean',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
 
-    // معالجة صورة المنتج إذا تم رفعها
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('products', 'public');
+            // معالجة صورة المنتج إذا تم رفعها
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('products', 'public');
+                
+                Log::info('New product image uploaded during creation', [
+                    'user_id' => Auth::id(),
+                    'user_name' => Auth::user()->name,
+                    'image_path' => $imagePath,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
+            }
+
+            // إنشاء المنتج
+            $product = Product::create([
+                'name' => $validated['name'],
+                'description' => $validated['description'],
+                'price' => $validated['price'],
+                'quantity' => $validated['quantity'], // حفظ الكمية
+                'category_id' => $validated['category_id'],
+                'on_sale' => $request->has('on_sale'),
+                'image_path' => $imagePath
+            ]);
+
+            // تسجيل إنشاء المنتج
+            Log::info('Product created successfully', [
+                'admin_user' => Auth::user()->name,
+                'admin_id' => Auth::id(),
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'quantity' => $validated['quantity'],
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            // التحقق من الكمية المنخفضة عند الإنشاء
+            if ($validated['quantity'] < 5) {
+                Log::warning('Low product stock warning - New product', [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'current_quantity' => $validated['quantity'],
+                    'admin_user' => Auth::user()->name,
+                    'threshold' => 5,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
+            }
+
+            return redirect()->route('products.index')
+                ->with('success', 'Product created successfully.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Product creation validation failed', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'validation_errors' => $e->errors(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            throw $e;
+
+        } catch (\Exception $e) {
+            Log::error('Product creation failed unexpectedly', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Failed to create product: ' . $e->getMessage());
+        }
     }
-
-    // إنشاء المنتج مع category_id
-    Product::create([
-        'name' => $validated['name'],
-        'description' => $validated['description'],
-        'price' => $validated['price'],
-        'category_id' => $validated['category_id'], // تأكد من إضافة هذا
-        'on_sale' => $request->has('on_sale'),
-        'image_path' => $imagePath
-    ]);
-
-    return redirect()->route('products.index')
-        ->with('success', 'Product created successfully.');
-}
 
     public function edit($id)
     {
-        $product = Product::findOrFail($id);
-        return view('shop.edit-product', compact('product'));
+        try {
+            $product = Product::findOrFail($id);
+            
+            // تسجيل عملية الوصول لصفحة التعديل
+            Log::info('Product edit page accessed', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return view('shop.edit-product', compact('product'));
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('Product not found for editing', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'product_id' => $id,
+                'error_message' => $e->getMessage(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            throw new ProductNotFoundException($id, "Cannot edit product. Product with ID {$id} not found.");
+        }
     }
 
     public function update(Request $request, $id)
@@ -85,10 +179,10 @@ public function store(Request $request)
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'price' => 'required|numeric|min:0',
+                'quantity' => 'required|integer|min:0', // حقل الكمية مطلوب الآن
                 'on_sale' => 'boolean',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'remove_image' => 'boolean',
-                'quantity' => 'sometimes|integer|min:0' // أضف هذا الحقل إذا كان موجوداً
+                'remove_image' => 'boolean'
             ]);
 
             // handel image
@@ -99,7 +193,6 @@ public function store(Request $request)
                 Storage::disk('public')->delete($imagePath);
                 $imagePath = null;
                 
-                // تسجيل حذف الصورة
                 Log::info('Product image removed', [
                     'user_id' => Auth::id(),
                     'user_name' => Auth::user()->name,
@@ -111,13 +204,11 @@ public function store(Request $request)
 
             // when a new image is uploaded
             if ($request->hasFile('image')) {
-                // delete last image if exist
                 if ($imagePath) {
                     Storage::disk('public')->delete($imagePath);
                 }
                 $imagePath = $request->file('image')->store('products', 'public');
                 
-                // تسجيل رفع صورة جديدة
                 Log::info('New product image uploaded', [
                     'user_id' => Auth::id(),
                     'user_name' => Auth::user()->name,
@@ -129,14 +220,16 @@ public function store(Request $request)
             }
 
             // update product
-            $product->update([
+            $updateData = [
                 'name' => $validated['name'],
                 'description' => $validated['description'],
                 'price' => $validated['price'],
+                'quantity' => $validated['quantity'], // تحديث الكمية
                 'on_sale' => $request->has('on_sale'),
-                'image_path' => $imagePath,
-                'quantity' => $validated['quantity'] ?? $product->quantity // تحديث الكمية إذا كانت موجودة
-            ]);
+                'image_path' => $imagePath
+            ];
+
+            $product->update($updateData);
 
             // 1. تسجيل عملية التعديل
             Log::info('Product updated by admin', [
@@ -151,7 +244,7 @@ public function store(Request $request)
             ]);
 
             // 2. التحقق من الكمية وإضافة تحذير إذا كانت منخفضة
-            if (isset($validated['quantity']) && $validated['quantity'] < 5) {
+            if ($validated['quantity'] < 5) {
                 Log::warning('Low product stock warning', [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -162,12 +255,10 @@ public function store(Request $request)
                 ]);
             }
 
-            // redirect with success message
             return redirect()->route('products.index')
                 ->with('success', 'Product "' . $product->name . '" updated successfully!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // تسجيل الخطأ
             Log::error('Product not found for update', [
                 'user_id' => Auth::id(),
                 'user_name' => Auth::user()->name,
@@ -177,11 +268,9 @@ public function store(Request $request)
                 'timestamp' => now()->toDateTimeString()
             ]);
 
-            // إطلاق الاستثناء المخصص
             throw new ProductNotFoundException($id, "Cannot update product. Product with ID {$id} not found.");
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // تسجيل أخطاء التحقق
             Log::warning('Product update validation failed', [
                 'user_id' => Auth::id(),
                 'user_name' => Auth::user()->name,
@@ -191,10 +280,9 @@ public function store(Request $request)
                 'timestamp' => now()->toDateTimeString()
             ]);
 
-            throw $e; // إعادة إطلاق الاستثناء للتعامل معه بشكل طبيعي
+            throw $e;
 
         } catch (\Exception $e) {
-            // تسجيل أي خطأ غير متوقع
             Log::error('Product update failed unexpectedly', [
                 'user_id' => Auth::id(),
                 'user_name' => Auth::user()->name,
@@ -209,18 +297,63 @@ public function store(Request $request)
                 ->with('error', 'Failed to update product: ' . $e->getMessage());
         }
     }
+
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-        $productName = $product->name;
+        try {
+            $product = Product::findOrFail($id);
+            $productName = $product->name;
 
-        if ($product->image_path) {
-            Storage::disk('public')->delete($product->image_path);
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+                
+                Log::info('Product image deleted during product deletion', [
+                    'user_id' => Auth::id(),
+                    'user_name' => Auth::user()->name,
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
+            }
+
+            $product->delete();
+
+            Log::info('Product deleted successfully', [
+                'admin_user' => Auth::user()->name,
+                'admin_id' => Auth::id(),
+                'product_id' => $id,
+                'product_name' => $productName,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return redirect()->route('products.index')
+                ->with('success', 'Product "' . $productName . '" has been deleted successfully!');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('Product not found for deletion', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'product_id' => $id,
+                'error_message' => $e->getMessage(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            throw new ProductNotFoundException($id, "Cannot delete product. Product with ID {$id} not found.");
+
+        } catch (\Exception $e) {
+            Log::error('Product deletion failed unexpectedly', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'product_id' => $id,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'ip_address' => request()->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Failed to delete product: ' . $e->getMessage());
         }
-
-        $product->delete();
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product "' . $productName . '" has been deleted successfully!');
     }
 }
